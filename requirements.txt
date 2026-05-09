@@ -1,0 +1,6 @@
+flask
+PyJWT
+werkzeug
+gunicorn
+pymongo
+python-dotenv

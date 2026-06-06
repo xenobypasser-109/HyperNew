@@ -463,6 +463,26 @@ def admin_ban():
     return jsonify({"ok": True, "user": user})
 
 
+@app.route("/admin/delete_user", methods=["POST"])
+def admin_delete_user():
+    admin = require_admin()
+    if not admin:
+        return err("Unauthorized", 403)
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "").strip()
+    if not username:
+        return err("username is required")
+    # Prevent deleting the master admin account
+    admin_username = os.getenv("HYPERXENO_ADMIN_USER", "").strip()
+    if admin_username and username == admin_username:
+        return err("Cannot delete the master admin account", 403)
+    ok = delete_user(username)
+    if not ok:
+        return err("User not found", 404)
+    add_audit(admin["username"], f"DELETE_USER: {username}")
+    return jsonify({"ok": True, "message": f"User '{username}' permanently deleted."})
+
+
 @app.route("/admin/set_role", methods=["POST"])
 def admin_set_role():
     admin = require_admin()
